@@ -1,0 +1,50 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model TVBroadcast.Domain.Models.LoginModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+    <link rel="stylesheet" href="~/css/webtable.css" />
+</head>
+<div class="header">
+    <h1>TV Broadcast Scheduler</h1>
+    @* <a href="/Account/Login" class="login-button">Login</a> *@
+</div>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form asp-action="Login" method="post" onsubmit="return validateLoginForm();">
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <input asp-for="Email" id="Email" />
+                <span id="errorEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Password">Password</label>
+                <input asp-for="Password" type="password" id="Password" />
+                <span id="errorPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit">Login</button>
+
+            <p style="text-align:center; margin-top: 10px;">
+                Not a user? <a asp-controller="Account" asp-action="Register">Register here</a>
+            </p>
+
+        </form>
+
+        @if (ViewBag.LoginFailed != null && ViewBag.LoginFailed)
+        {
+            <script>
+                alert("Only registered users can login.");
+            </script>
+        }
+
+    </div>
+    <script src="~/js/forms.js"></script>
+</body>
+</html>
+

@@ -166,3 +166,88 @@
 .cancel-btn:hover {
     background-color: #95a5a6;
 }
+
+/* ------------------CSS For login page------------------------------ */
+
+           /* -------CSS For login page---------- */
+
+/* ------------------CSS For login page------------------------------ */
+.login-container {
+    width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+    .login-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.text-danger {
+    color: red;
+    font-size: 13px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #006bff;
+    }
+
+.welcome-box {
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 400px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: #fffdfd;
+    text-align: center;
+}
+
+.welcome-box h2 {
+    color: #333;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+

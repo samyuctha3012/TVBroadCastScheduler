@@ -21,5 +21,21 @@
 
     return valid;
 }
-//-----------edit form js------------
+//-----------Login form js------------
+
+function validateLoginForm() {
+    let valid = true;
+
+    const email = document.getElementById("Email").value.trim();
+    const password = document.getElementById("Password").value.trim();
+
+    document.getElementById("errorEmail").textContent = email === "" ? "Email is required" : "";
+    document.getElementById("errorPassword").textContent = password.length < 6 ? "Password must be at least 6 characters" : "";
+
+    if (!email || password.length < 6) {
+        valid = false;
+    }
+
+    return valid;
+}
 

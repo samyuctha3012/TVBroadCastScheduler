@@ -1,0 +1,142 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model TVBroadcast.Domain.Models.RegisterModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register</title>
+    <link rel="stylesheet" href="~/css/login.css" />
+    <link rel="stylesheet" href="~/css/webtable.css" />
+    <style>
+        .login-container {
+            width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+            .login-container h2 {
+                text-align: center;
+                margin-bottom: 20px;
+                color: #333;
+            }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .text-danger {
+            color: red;
+            font-size: 13px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #218838;
+            }
+    </style>
+
+    <script>
+        function validateRegisterForm() {
+            let valid = true;
+
+            const fullName = document.getElementById("FullName").value.trim();
+            const email = document.getElementById("Email").value.trim();
+            const password = document.getElementById("Password").value.trim();
+            const confirmPassword = document.getElementById("ConfirmPassword").value.trim();
+            const role = document.getElementById("Role").value;
+
+            document.getElementById("errorFullName").textContent = fullName === "" ? "Full name is required" : "";
+            document.getElementById("errorEmail").textContent = email === "" ? "Email is required" : "";
+            document.getElementById("errorPassword").textContent = password.length < 6 ? "Password must be at least 6 characters" : "";
+            document.getElementById("errorConfirmPassword").textContent = confirmPassword !== password ? "Passwords do not match" : "";
+            document.getElementById("errorRole").textContent = role === "" ? "Role is required" : "";
+
+            if (!fullName || !email || password.length < 6 || confirmPassword !== password || role === "") {
+                valid = false;
+            }
+
+            return valid;
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>TV Broadcast Scheduler</h1>
+        @* <a href="/Account/Login" class="login-button">Login</a> *@
+    </div>
+    <div class="login-container">
+        <h2>Register</h2>
+        <form asp-action="Register" method="post" onsubmit="return validateRegisterForm();">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label for="FullName">Full Name</label>
+                <input asp-for="FullName" id="FullName" />
+                <span id="errorFullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <input asp-for="Email" id="Email" />
+                <span id="errorEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Password">Password</label>
+                <input asp-for="Password" type="password" id="Password" />
+                <span id="errorPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="ConfirmPassword">Confirm Password</label>
+                <input asp-for="ConfirmPassword" type="password" id="ConfirmPassword" />
+                <span id="errorConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Role">Role</label>
+                <select asp-for="Role" id="Role">
+                    <option value="">-- Select Role --</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Scheduler">Scheduler</option>
+                    <option value="Approver">Approver</option>
+                </select>
+                <span id="errorRole" class="text-danger"></span>
+            </div>
+
+            <button type="submit">Register</button>
+
+            <p style="text-align:center; margin-top: 10px;">
+                Already a user? <a asp-controller="Account" asp-action="Login">Login here</a>
+            </p>
+        </form>
+    </div>
+</body>
+</html>
