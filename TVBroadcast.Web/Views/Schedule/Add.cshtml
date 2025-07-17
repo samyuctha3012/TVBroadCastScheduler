@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Add Show";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="~/css/forms.css" />
+    <link rel="stylesheet" href="~/css/webtable.css" />
+</head>
+
+<div class="header">
+    <h1>TV Broadcast Scheduler</h1>
+    <a href="/Account/Login" class="login-button">Login</a>
+</div>
+
+<h2>Add a New Show</h2>
+
+<form method="post" action="/Schedule/Add" onsubmit="return validateForm()">
+    <label>Title</label>
+    <input type="text" name="Title" id="Title" required />
+    <div class="error" id="errorTitle"></div>
+
+    <label>Genre</label>
+    <input type="text" name="Genre" id="Genre" required />
+    <div class="error" id="errorGenre"></div>
+
+    <label>Description</label>
+    <input type="text" name="Description" id="Description" required />
+    <div class="error" id="errorDesc"></div>
+
+    <label>Duration (minutes)</label>
+    <input type="number" name="DurationMinutes" id="DurationMinutes" required />
+    <div class="error" id="errorDuration"></div>
+
+    <label>Approval Status</label>
+    <input type="text" name="ApprovalStatus" id="ApprovalStatus" required />
+    <div class="error" id="errorStatus"></div>
+
+    <label>Time</label>
+    <input type="time" name="Time" id="Time" required />
+    <div class="error" id="errorTime"></div>
+
+    <button type="submit">Save</button>
+</form>
+
+@section Scripts {
+    <script src="~/js/forms.js"></script>
+}
+
+

@@ -1,0 +1,6 @@
+@TVBroadcast.Web_HostAddress = http://localhost:5289
+
+GET {{TVBroadcast.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

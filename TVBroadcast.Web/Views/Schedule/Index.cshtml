@@ -1,0 +1,114 @@
+﻿@model List<TVBroadcast.Domain.Models.ShowsModel>
+
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - TV Scheduler</title>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" href="~/css/webtable.css?v=2" />
+</head>
+
+<body>
+    <!-- Page Header -->
+    <div class="header">
+        <h1>TV Broadcast Scheduler</h1>
+        <a href="/Account/Login" class="login-button">Login</a>
+    </div>
+
+    <!-- Add Show Button -->
+    <div style="text-align: left; margin: 30px 0;">
+        <a href="/Schedule/Add" class="add-button">+ Add Show</a>
+    </div>
+
+    <!-- Broadcast Table -->
+    <table class="broadcast-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Title</th>
+                <th>Genre</th>
+                <th>Description</th>
+                <th>Approval</th>
+                <th>Actions</th> 
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var show in Model)
+            {
+                var showTimeStr = show.Time.ToString(@"hh\:mm");
+                <tr data-time="@showTimeStr">
+                    <td>@showTimeStr</td>
+                    <td>@show.Title</td>
+                    <td>@show.Genre</td>
+                    <td>@show.Description</td>
+                    <td>@show.ApprovalStatus</td>
+                    <td>
+                        <a href="#" class="edit-link" data-id="@show.Id">Edit</a> |
+                        <a href="#" class="delete-link" data-id="@show.Id">Delete</a>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="editForm" method="post">
+                <input type="hidden" id="editId" name="Id" />
+
+                <label>Title:</label>
+                <input type="text" id="editTitle" name="Title" required />
+
+                <label>Genre:</label>
+                <input type="text" id="editGenre" name="Genre" required />
+
+                <label>Description:</label>
+                <textarea id="editDescription" name="Description" required></textarea>
+
+                <label>Time (HH:MM):</label>
+                <input type="time" id="editTime" name="Time" required />
+
+                <label>Approval Status:</label>
+                <input type="text" id="editApproval" name="ApprovalStatus" required />
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-delete">&times;</span>
+            <p id="deleteMessage" style="font-weight: bold;"></p>
+
+            <ul style="list-style-type: none; padding: 0;">
+                <li><strong>Time:</strong> <span id="deleteTime"></span></li>
+                <li><strong>Genre:</strong> <span id="deleteGenre"></span></li>
+                <li><strong>Description:</strong> <span id="deleteDescription"></span></li>
+                <li><strong>Approval Status:</strong> <span id="deleteApproval"></span></li>
+            </ul>
+
+            <form id="deleteForm" method="post">
+                <input type="hidden" id="deleteId" name="Id" />
+                <button type="submit" class="delete-btn">Delete</button>
+                <button type="button" class="cancel-btn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+
+   <script src="~/js/webtable.js"></script>
+</body>
+
+
+
+
+
+
