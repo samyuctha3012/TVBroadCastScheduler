@@ -51,10 +51,41 @@ namespace TVBroadcast.BLL.Services
         }
 
         //for deleting the shows from database
+
+        public ShowsModel GetById(int id)
+        {
+            return _showRepository.GetById(id); // Simple and sweet 🍬
+        }
+
+
         public async Task DeleteShowAsync(int id)
         {
             await _showRepository.DeleteShowAsync(id);
         }
+
+
+        public List<ShowTimeDTO> GetShowTimes()
+        {
+            return _showRepository.GetShowTimes();
+        }
+
+        public bool IsTimeSlotAvailable(TimeSpan startTime, TimeSpan endTime)
+        {
+            return _showRepository.IsTimeSlotAvailable(startTime, endTime);
+        }
+
+        public async Task<ShowsModel> GetShowByIdAsync(int id)
+        {
+            return await _showRepository.GetByIdAsync(id); // Not FindAsync!
+        }
+
+
+       
+        public async Task ApproveShowAsync(int id)
+        {
+            await _showRepository.ApproveShowAsync(id);
+        }
+
 
 
     }

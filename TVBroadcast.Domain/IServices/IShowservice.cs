@@ -17,5 +17,16 @@ namespace TVBroadcast.Domain.IServices
 
         Task DeleteShowAsync(int id);
 
+        bool IsTimeSlotAvailable(TimeSpan startTime, TimeSpan endTime);
+
+        ShowsModel GetById(int id);
+
+        Task<ShowsModel> GetShowByIdAsync(int id);
+
+
+        Task ApproveShowAsync(int id);
+
+
+
     }
 }

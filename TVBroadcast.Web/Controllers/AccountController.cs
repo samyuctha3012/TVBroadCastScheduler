@@ -16,7 +16,7 @@ namespace TVBroadcast.Web.Controllers
         private readonly AppDbContext _context;
 
         public AccountController(
-            AppDbContext context // <- Add this
+            AppDbContext context
         )
         {
             _context = context;
@@ -30,34 +30,39 @@ namespace TVBroadcast.Web.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            HttpContext.Session.Clear();
             return View();
         }
-        [HttpPost]
-        // Example Login POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = _context.Users.FirstOrDefault(u => u.Email == model.Email && u.PasswordHash == model.Password); // Note: You should use hashed passwords here!
+                string hashedPassword = ComputeSha256Hash(model.Password); // 💖 Hash the input password
+
+                var user = _context.Users.FirstOrDefault(u => u.Email == model.Email && u.PasswordHash == hashedPassword); // ✅ Compare hashed
 
                 if (user != null)
                 {
-                    // Save user info to session
                     HttpContext.Session.SetString("UserEmail", user.Email);
-                    HttpContext.Session.SetInt32("UserId", user.Id); // or any ID you use
+                    HttpContext.Session.SetInt32("UserId", user.Id);
+                    HttpContext.Session.SetString("FullName", user.FullName);
+                    HttpContext.Session.SetInt32("RoleId", user.RoleId);
 
-                    return RedirectToAction("Index", "Home");
+
+                    return RedirectToAction("Index", "Schedule");
                 }
                 else
                 {
                     ModelState.AddModelError("", "Invalid email or password.");
+                    ViewBag.LoginFailed = true;
                 }
             }
 
             return View(model);
         }
+
 
         [HttpGet]
         public IActionResult Register()
@@ -71,10 +76,9 @@ namespace TVBroadcast.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                // 🥰 Hash the password
+                // Hash the password
                 string passwordHash = ComputeSha256Hash(model.Password);
 
-                // 🌸 Get RoleId from Roles table
                 var role = _context.Roles.FirstOrDefault(r => r.Name == model.Role);
                 if (role == null)
                 {
@@ -82,7 +86,7 @@ namespace TVBroadcast.Web.Controllers
                     return View(model);
                 }
 
-                // 🍼 Create user
+                //Create user
                 var user = new User
                 {
                     FullName = model.FullName,
@@ -91,7 +95,7 @@ namespace TVBroadcast.Web.Controllers
                     RoleId = role.Id
                 };
 
-                // 💾 Save to DB
+                //save to DB
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
@@ -102,7 +106,7 @@ namespace TVBroadcast.Web.Controllers
             return View(model);
         }
 
-        // ❤️ Hash utility
+        //Hash utility
         private string ComputeSha256Hash(string rawData)
         {
             using var sha256 = SHA256.Create();
@@ -113,10 +117,10 @@ namespace TVBroadcast.Web.Controllers
         //Logout 
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear(); // or remove specific keys like Session.Remove("UserId")
-            return RedirectToAction("Index", "Home");
+            var fullName = HttpContext.Session.GetString("FullName");
+            TempData["LogoutMessage"] = $"{fullName} logged out successfully!";
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index", "Schedule");
         }
-
-
     }
 }

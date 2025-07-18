@@ -33,22 +33,25 @@ $(document).ready(function () {
         e.preventDefault();
 
         const row = $(this).closest("tr");
+
         const id = $(this).data("id");
-        const title = row.find("td:eq(1)").text().trim();
-        const genre = row.find("td:eq(2)").text().trim();
-        const description = row.find("td:eq(3)").text().trim();
-        const approval = row.find("td:eq(4)").text().trim();
-        const time = row.find("td:eq(0)").text().trim();
+        const startTime = row.find("td:eq(0)").text().trim();
+        const endTime = row.find("td:eq(1)").text().trim();
+        const title = row.find("td:eq(2)").text().trim();
+        const genre = row.find("td:eq(3)").text().trim();
+        const description = row.find("td:eq(4)").text().trim();
 
         $("#editId").val(id);
         $("#editTitle").val(title);
         $("#editGenre").val(genre);
         $("#editDescription").val(description);
-        $("#editApproval").val(approval);
-        $("#editTime").val(time);
+        $("#editStartTime").val(startTime);
+        $("#editEndTime").val(endTime);
+        $("#editApproval").val("Pending"); // always set to pending
 
         $("#editModal").show();
     });
+
 
     $(".close").click(function () {
         $("#editModal").hide();
@@ -130,3 +133,7 @@ $(document).ready(function () {
         });
     });
 });
+
+//--------------logout notification-------------------------//
+
+

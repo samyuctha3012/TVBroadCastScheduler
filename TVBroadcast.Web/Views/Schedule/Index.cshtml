@@ -1,29 +1,79 @@
 ﻿@model List<TVBroadcast.Domain.Models.ShowsModel>
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
 
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - TV Scheduler</title>
 
+    <!-- Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 
+    <!-- jQuery (you already have) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <link rel="stylesheet" href="~/css/webtable.css?v=2" />
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+
+    <link rel="stylesheet" href="~/css/webtable.css?v=6" />
 </head>
+
+
 
 <body>
     <!-- Page Header -->
+    @{
+        int? roleId = HttpContextAccessor.HttpContext.Session.GetInt32("RoleId");
+        bool canAddShow = roleId == 1 || roleId == 2; // Admin or Scheduler
+        string tooltipMessage = canAddShow ? "" : "You don't have permission to add shows";
+    }
 
+    <div class="header">
+        <h1>TV Broadcast Scheduler</h1>
 
-    <!-- Add Show Button -->
-    <div style="text-align: left; margin: 30px 0;">
-        <a href="/Schedule/Add" class="add-button">+ Add Show</a>
+        @if (HttpContextAccessor.HttpContext.Session.GetString("UserEmail") != null)
+        {
+            <div class="user-info-container">
+
+                @* ✅ Use existing roleId variable, no redeclaration *@
+                @if (roleId == 3)
+                {
+                    <a href="/Approver/Notifications" class="login-button" title="View Notifications">
+                        Notification
+                    </a>
+                }
+
+                <a href="/Account/Logout" class="login-button">Logout</a>
+            </div>
+        }
+        else
+        {
+            <a href="/Account/Login" class="login-button">Login</a>
+        }
     </div>
+
+    <div style="text-align: left; margin: 30px 0;">
+        <a href="@((canAddShow ? "/Schedule/Add" : "#"))"
+           class="add-button @(canAddShow ? "" : "disabled-link")"
+           title="@tooltipMessage">
+            + Add Show
+        </a>
+    </div>
+
+
+
+
+
 
     <!-- Broadcast Table -->
     <table class="broadcast-table">
         <thead>
             <tr>
-                <th>Time</th>
+                <th>StartTime</th>
+                <th>EndTime</th>
                 <th>Title</th>
                 <th>Genre</th>
                 <th>Description</th>
@@ -34,17 +84,26 @@
         <tbody>
             @foreach (var show in Model)
             {
-                var showTimeStr = show.Time.ToString(@"hh\:mm");
-                <tr data-time="@showTimeStr">
-                    <td>@showTimeStr</td>
+                var startTimeStr = show.StartTime.ToString(@"hh\:mm");
+                var endTimeStr = show.EndTime.ToString(@"hh\:mm");
+                <tr data-starttime="@startTimeStr" data-endtime="@endTimeStr">
+                    <td>@startTimeStr</td> <!-- Just StartTime -->
+                    <td>@endTimeStr</td>   <!-- Just EndTime -->
                     <td>@show.Title</td>
                     <td>@show.Genre</td>
                     <td>@show.Description</td>
                     <td>@show.ApprovalStatus</td>
                     <td>
-                        <a href="#" class="edit-link" data-id="@show.Id">Edit</a> |
-                        <a href="#" class="delete-link" data-id="@show.Id">Delete</a>
-
+                        @if (canAddShow)
+                        {
+                            <a href="#" class="edit-link" data-id="@show.Id">Edit</a>
+                            <a href="#" class="delete-link" data-id="@show.Id">Delete</a>
+                        }
+                        else
+                        {
+                            <span style="color: grey; cursor: not-allowed;">Edit</span>
+                            <span style="color: grey; cursor: not-allowed;">Delete</span>
+                        }
                     </td>
                 </tr>
             }
@@ -55,32 +114,49 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <form id="editForm" method="post">
+            <form id="editForm" method="post" action="/Schedule/Edit" onsubmit="return validateEditForm()">
                 <input type="hidden" id="editId" name="Id" />
 
-                <label>Title:</label>
+                <label>Title</label>
                 <input type="text" id="editTitle" name="Title" required />
+                <div class="error" id="editErrorTitle"></div>
 
-                <label>Genre:</label>
+                <label>Genre</label>
                 <input type="text" id="editGenre" name="Genre" required />
+                <div class="error" id="editErrorGenre"></div>
 
-                <label>Description:</label>
-                <textarea id="editDescription" name="Description" required></textarea>
+                <label>Description</label>
+                <input type="text" id="editDescription" name="Description" required />
+                <div class="error" id="editErrorDesc"></div>
 
-                <label>Time (HH:MM):</label>
-                <input type="time" id="editTime" name="Time" required />
+                <label>Duration (minutes)</label>
+                <input type="number" id="editDurationMinutes" name="DurationMinutes" required />
+                <div class="error" id="editErrorDuration"></div>
 
-                <label>Approval Status:</label>
-                <input type="text" id="editApproval" name="ApprovalStatus" required />
+                <label>Start Time</label>
+                <input type="time" id="editStartTime" name="StartTime" required />
+                <div class="error" id="editErrorStartTime"></div>
+
+                <label>End Time</label>
+                <input type="time" id="editEndTime" name="EndTime" required />
+                <div class="error" id="editErrorEndTime"></div>
+
+                <label>Approver Status</label>
+                <input type="text" id="editApproval" name="ApprovalStatus" value="Pending" readonly />
+                <div class="error" id="editErrorStatus"></div>
+
 
                 <button type="submit">Save Changes</button>
             </form>
         </div>
     </div>
 
+
     <!-- Delete Confirmation Modal -->
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
+        @Html.AntiForgeryToken()
+
         <div class="modal-content">
             <span class="close-delete">&times;</span>
             <p id="deleteMessage" style="font-weight: bold;"></p>
@@ -102,6 +178,21 @@
 
 
    <script src="~/js/webtable.js"></script>
+    <script>
+        $(document).ready(function () {
+            var logoutMsg = '@TempData["LogoutMessage"]';
+            if (logoutMsg) {
+                toastr.options = {
+                    "closeButton": true,
+                    "progressBar": true,
+                    "positionClass": "toast-bottom-right",
+                    "timeOut": "3000"
+                };
+                toastr.success(logoutMsg);
+            }
+        });
+    </script>
+
 </body>
 
 

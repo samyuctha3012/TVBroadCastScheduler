@@ -29,16 +29,25 @@ namespace TVBroadcast.Web.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Add(ShowsModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                Console.WriteLine("Received: " + model.Title + ", " + model.Time);
 
-                await _showService.AddShowAsync(model); // This will save everything!
-                return RedirectToAction("Index");
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Please fill all required fields!" });
             }
 
-            return View(model);
+            if (!_showService.IsTimeSlotAvailable(model.StartTime, model.EndTime))
+            {
+                return Json(new { success = false, message = "⏰ This time slot is already booked! Please choose a different one." });
+            }
+            model.ApprovalStatus = "Pending";
+            await _showService.AddShowAsync(model);
+            return Json(new
+            {
+                success = true,
+                message = "Show added successfully!",
+                redirectUrl = Url.Action("Index")
+            });
         }
 
         //edit form
@@ -47,6 +56,7 @@ namespace TVBroadcast.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                model.ApprovalStatus = "Pending";
                 await _showService.UpdateShowAsync(model);
                 return Ok(); // Used in Ajax
             }
@@ -55,13 +65,22 @@ namespace TVBroadcast.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(int id)
+        public IActionResult Delete(int id)
         {
-            await _showService.DeleteShowAsync(id);
-            return Ok();
+            var show = _showService.GetById(id);
+            if (show == null)
+                return NotFound();
+
+            _showService.DeleteShowAsync(id);
+            return Ok(); // Success response
         }
+
 
 
     }
 
+
+
 }
+
+

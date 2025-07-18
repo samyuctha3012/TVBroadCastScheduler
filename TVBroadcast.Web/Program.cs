@@ -14,22 +14,27 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // 🧸 Register Services
 builder.Services.AddScoped<IShowRepository, ShowRepository>();
 builder.Services.AddScoped<IShowService, ShowService>();
+builder.Services.AddScoped<IApproveService, ApproveService>();
+builder.Services.AddScoped<IApproveRepository, ApproveRepository>();
+
 
 // 💖 Add MVC support
 builder.Services.AddControllersWithViews();
 
 // 🍼 Add session support BEFORE app is built
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession();
+
+//builder.Services.AddSession(options =>
+//{
+//    options.IdleTimeout = TimeSpan.FromMinutes(30);
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.IsEssential = true;
+//});
 
 var app = builder.Build();
 
-// 🐥 Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -41,7 +46,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 🍬 Session middleware must come BEFORE authorization
+
 app.UseSession();
 
 app.UseAuthorization();

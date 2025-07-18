@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace TVBroadcast.Domain.Models
 {
-    public class UserModel
+    public class ShowTimeDTO
     {
-      
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }

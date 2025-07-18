@@ -1,11 +1,16 @@
 ﻿@{
     ViewData["Title"] = "Add Show";
 }
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
 
 <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="~/css/forms.css" />
     <link rel="stylesheet" href="~/css/webtable.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 
 <div class="header">
@@ -15,7 +20,7 @@
 
 <h2>Add a New Show</h2>
 
-<form method="post" action="/Schedule/Add" onsubmit="return validateForm()">
+<form method="post" action="/Schedule/Add" onsubmit="return validateForm()" id="showForm">
     <label>Title</label>
     <input type="text" name="Title" id="Title" required />
     <div class="error" id="errorTitle"></div>
@@ -32,19 +37,182 @@
     <input type="number" name="DurationMinutes" id="DurationMinutes" required />
     <div class="error" id="errorDuration"></div>
 
-    <label>Approval Status</label>
+    <label>Approver Status</label>
     <input type="text" name="ApprovalStatus" id="ApprovalStatus" required />
     <div class="error" id="errorStatus"></div>
 
-    <label>Time</label>
-    <input type="time" name="Time" id="Time" required />
-    <div class="error" id="errorTime"></div>
+    <label>Start Time</label>
+    <input type="time" name="StartTime" id="StartTime" required />
+    <div class="error" id="errorStartTime"></div>
+
+    <label>End Time</label>
+    <input type="time" name="EndTime" id="EndTime" required />
+    <div class="error" id="errorEndTime"></div>
 
     <button type="submit">Save</button>
+
 </form>
 
-@section Scripts {
-    <script src="~/js/forms.js"></script>
+
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+{
+    var error = ViewData.ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage;
+    if (!string.IsNullOrEmpty(error))
+    {
+        <script>
+            alert("@error");
+        </script>
+    }
 }
+
+
+@* @section Scripts {
+    <script src="~/js/forms.js"></script>
+ *@}
+
+<script>
+    let existingSchedules = [];
+
+    // Fetch existing schedules once the page loads
+    window.onload = function () {
+        fetch('/Schedule/GetShowTimes')
+            .then(response => response.json())
+            .then(data => {
+                existingSchedules = data;
+            });
+    };
+
+    function timeStringToMinutes(t) {
+        const parts = t.split(":");
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }
+
+    function isOverlapping(newStart, newEnd) {
+        for (const s of existingSchedules) {
+            const existingStart = timeStringToMinutes(s.StartTime);
+            const existingEnd = timeStringToMinutes(s.EndTime);
+
+            // Check if times overlap
+            if (
+                (newStart >= existingStart && newStart < existingEnd) ||
+                (newEnd > existingStart && newEnd <= existingEnd) ||
+                (newStart <= existingStart && newEnd >= existingEnd)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function validateForm() {
+        let valid = true;
+
+        // Basic field validation
+        const title = document.getElementById("Title").value.trim();
+        const genre = document.getElementById("Genre").value.trim();
+        const desc = document.getElementById("Description").value.trim();
+        const status = document.getElementById("ApprovalStatus").value.trim();
+
+        const start = document.getElementById("StartTime").value;
+        const end = document.getElementById("EndTime").value;
+        const durationInput = document.getElementById("DurationMinutes");
+
+        // Error labels
+        const errorTitle = document.getElementById("errorTitle");
+        const errorGenre = document.getElementById("errorGenre");
+        const errorDesc = document.getElementById("errorDesc");
+        const errorStatus = document.getElementById("errorStatus");
+        const errorStart = document.getElementById("errorStartTime");
+        const errorEnd = document.getElementById("errorEndTime");
+        const errorDuration = document.getElementById("errorDuration");
+
+        // Clear errors
+        errorTitle.textContent = "";
+        errorGenre.textContent = "";
+        errorDesc.textContent = "";
+        errorStatus.textContent = "";
+        errorStart.textContent = "";
+        errorEnd.textContent = "";
+        errorDuration.textContent = "";
+
+        // Field checks
+        if (title === "") { errorTitle.textContent = "Title is required"; valid = false; }
+        if (genre === "") { errorGenre.textContent = "Genre is required"; valid = false; }
+        if (desc === "") { errorDesc.textContent = "Description is required"; valid = false; }
+        if (status === "") { errorStatus.textContent = "Status is required"; valid = false; }
+        if (!start) { errorStart.textContent = "Start time is required"; valid = false; }
+        if (!end) { errorEnd.textContent = "End time is required"; valid = false; }
+
+        if (start && end) {
+            const startDate = new Date(`1970-01-01T${start}`);
+            const endDate = new Date(`1970-01-01T${end}`);
+
+            if (endDate <= startDate) {
+                errorEnd.textContent = "End time must be after start time.";
+                valid = false;
+            } else {
+                const duration = (endDate - startDate) / (1000 * 60); // in minutes
+                durationInput.value = duration;
+
+                const newStart = timeStringToMinutes(start);
+                const newEnd = timeStringToMinutes(end);
+
+                if (isOverlapping(newStart, newEnd)) {
+                    errorStart.textContent = "Schedule overlaps with existing show.";
+                    errorEnd.textContent = "Please choose a different time slot.";
+                    valid = false;
+                }
+
+                if (duration <= 0) {
+                    errorDuration.textContent = "Duration must be greater than zero.";
+                    valid = false;
+                }
+            }
+        }
+
+        return valid;
+    }
+
+    // Auto calculate
+    document.getElementById("StartTime").addEventListener("change", validateForm);
+    document.getElementById("EndTime").addEventListener("change", validateForm);
+
+     $("#showForm").on("submit", function (e) {
+        e.preventDefault(); // stop default form submission
+
+        const form = $(this);
+        const formData = form.serialize(); // serialize all form inputs
+
+        $.ajax({
+            url: form.attr("action"),
+            method: form.attr("method"),
+            data: formData,
+            success: function (result) {
+                if (result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success 🎉",
+                        text: result.message,
+                        confirmButtonColor: "#3085d6"
+                    }).then(() => {
+                        window.location.href = result.redirectUrl; // redirect if needed
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "⏰ Time Slot Error!",
+                        text: result.message,
+                        confirmButtonColor: "#d33"
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire("Oops", "Something went wrong!", "error");
+            }
+        });
+    });
+
+</script>
+
 
 
